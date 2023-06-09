@@ -1,61 +1,65 @@
 import os
 import pandas as pd
-import numpy as np
 
-# Função para aplicar o filtro complementar aos dados
-def aplicar_filtro_complementar(acelerometro, giroscopio, alfa, dt):
-    angulo = np.zeros(3)
-    velocidade_angular = np.zeros(3)
-    angulos_filtrados = []
+def complementar_filter(accelerometer_data, gyroscope_data, alpha=0.98):
+    fused_data = pd.DataFrame()
+    
+    # Aplicar o filtro complementar para cada eixo
+    for axis in ['x', 'y', 'z']:
+        accel_axis = 'rfa' + axis
+        gyro_axis = 'rfg' + axis
+        
+        # Obter as séries de dados para o eixo atual
+        accel_series = accelerometer_data[accel_axis]
+        gyro_series = gyroscope_data[gyro_axis]
+        
+        # Inicializar a lista de dados filtrados para o eixo atual
+        filtered_data = []
+        
+        # Aplicar o filtro complementar
+        for accel_val, gyro_val in zip(accel_series, gyro_series):
+            fused_val = alpha * gyro_val + (1 - alpha) * accel_val
+            filtered_data.append(fused_val)
+        
+        # Adicionar os dados filtrados ao DataFrame resultante
+        fused_data['rf' + axis] = pd.Series(filtered_data)
+    
+    return fused_data
 
-    for i in range(len(acelerometro)):
-        aceleracao = acelerometro[i]
-        velocidade_angular += (giroscopio[i] - velocidade_angular) * dt
-        angulo += dt * (velocidade_angular + alfa * aceleracao)
-        angulos_filtrados.append(angulo)
+# Caminho da pasta que contém os arquivos XLSX
+folder_path = "HuGaDB_RF_CalibratedAccGyro"
 
-    return np.array(angulos_filtrados)
+# Caminho da pasta onde serão salvos os arquivos resultantes
+output_folder = folder_path + "/Complementar"
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
 
-# Pasta de origem dos arquivos XLSX
-pasta_origem = "caminho/da/pasta"
+# Lista para armazenar os nomes dos arquivos processados
+processed_files = []
 
-# Pasta de destino para os arquivos XLSX filtrados
-pasta_destino = "caminho/da/pasta/Complementar"
-
-# Parâmetros do filtro complementar
-alfa = 0.98
-dt = 0.01
-
-# Verifica se a pasta de destino existe, caso contrário, cria-a
-if not os.path.exists(pasta_destino):
-    os.makedirs(pasta_destino)
-
-# Percorre todos os arquivos XLSX na pasta de origem
-for arquivo in os.listdir(pasta_origem):
-    if arquivo.endswith(".xlsx"):
-        # Caminho completo para o arquivo de origem
-        caminho_arquivo = os.path.join(pasta_origem, arquivo)
-
-        # Leitura dos dados do arquivo XLSX
-        dados = pd.read_excel(caminho_arquivo)
-
-        # Extrair os dados dos eixos do acelerômetro e do giroscópio
-        acelerometro = dados[['rfax', 'rfay', 'rfaz']].values
-        giroscopio = dados[['rfgx', 'rfgy', 'rfgz']].values
-
+# Percorrer todos os arquivos na pasta
+for filename in os.listdir(folder_path):
+    if filename.endswith(".xlsx"):
+        file_path = os.path.join(folder_path, filename)
+        
+        # Ler os dados do acelerômetro e giroscópio do arquivo XLSX
+        data = pd.read_excel(file_path)
+        accelerometer_data = data[['rfax', 'rfay', 'rfaz']]
+        gyroscope_data = data[['rfgx', 'rfgy', 'rfgz']]
+        
         # Aplicar o filtro complementar aos dados
-        angulos_filtrados = aplicar_filtro_complementar(acelerometro, giroscopio, alfa, dt)
+        fused_data = complementar_filter(accelerometer_data, gyroscope_data)
+        
+        # Criar o nome do arquivo de saída
+        output_filename =  filename[:-5] + "_complementar.xlsx"
+        output_path = os.path.join(output_folder, output_filename)
+        
+        # Salvar os dados filtrados em um novo arquivo XLSX
+        fused_data.to_excel(output_path, index=False)
+        
+        processed_files.append(output_filename)
 
-        # Criar um DataFrame com os ângulos filtrados
-        df_filtrado = pd.DataFrame(angulos_filtrados, columns=['AnguloX', 'AnguloY', 'AnguloZ'])
-
-        # Criar o nome do arquivo de destino
-        nome_arquivo_destino = os.path.splitext(arquivo)[0] + "_filtrado.xlsx"
-        caminho_arquivo_destino = os.path.join(pasta_destino, nome_arquivo_destino)
-
-        # Salvar o DataFrame filtrado em um novo arquivo XLSX
-        df_filtrado.to_excel(caminho_arquivo_destino, index=False)
-
-        print(f"Arquivo {arquivo} processado e salvo como {nome_arquivo_destino}.")
-
-print("Processamento concluído.")
+# Imprimir os arquivos processados
+print("Arquivos processados:")
+for filename in processed_files:
+    print(filename)
