@@ -1,11 +1,12 @@
+# esse worka
 import os
 import glob
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from openpyxl import Workbook
+from openpyxl import load_workbook
 
-# Função para aplicar o filtro de Kalman e salvar os dados filtrados
+# Função para aplicar o filtro de Kalman e substituir as colunas filtradas nos dados de saída
 def aplicar_filtro_kalman(arquivo):
     # Carregar os dados do arquivo .xlsx
     dados = pd.read_excel(arquivo, sheet_name='Sheet1')
@@ -49,15 +50,19 @@ def aplicar_filtro_kalman(arquivo):
         x_est.append(x_pred + K.dot(innovation))
         P_est.append((np.eye(3) - K.dot(H)).dot(P_pred))
 
-    # Extrair as colunas filtradas
-    coluna1_filtrada = [x[0] for x in x_est[1:]]
-    coluna2_filtrada = [x[1] for x in x_est[1:]]
-    coluna3_filtrada = [x[2] for x in x_est[1:]]
+    # Substituir as colunas filtradas nos dados de saída
+    dados_filtrados = dados.copy()
+    dados_filtrados['rfax'] = [x[0] for x in x_est[1:]]
+    dados_filtrados['rfay'] = [x[1] for x in x_est[1:]]
+    dados_filtrados['rfaz'] = [x[2] for x in x_est[1:]]
 
-    # salvar dados em .xlsx
-    df_filtrado = pd.DataFrame({'Coluna 1': coluna1_filtrada, 'Coluna 2': coluna2_filtrada, 'Coluna 3': coluna3_filtrada})
+    # Obter o caminho para o arquivo de saída
     nome_arquivo = os.path.splitext(os.path.basename(arquivo))[0]
-    df_filtrado.to_excel(f'Single/Kalman/{nome_arquivo}_kalman.xlsx', index=False)
+    arquivo_saida = f'Single/Kalman/{nome_arquivo}_kalman.xlsx'
+
+    # Salvar os dados filtrados no arquivo de saída
+    with pd.ExcelWriter(arquivo_saida) as writer:
+        dados_filtrados.to_excel(writer, sheet_name='Sheet1', index=False)
 
 # Pasta com os arquivos .xlsx
 pasta_dados = 'HuGaDB_RF_CalibratedAccGyro'
@@ -68,4 +73,5 @@ arquivos_xlsx = glob.glob(os.path.join(pasta_dados, '*.xlsx'))
 # Iterar sobre os arquivos e aplicar o filtro de Kalman
 for arquivo in arquivos_xlsx:
     aplicar_filtro_kalman(arquivo)
-    
+
+    print('aplicou')
