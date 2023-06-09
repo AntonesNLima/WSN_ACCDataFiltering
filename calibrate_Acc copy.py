@@ -5,7 +5,7 @@ import pandas as pd
 pasta_entrada = "HuGaDB_RFOnly"
 
 # Pasta de saída
-pasta_saida = "HuGaDB_RF-Acc-Calibrated"
+pasta_saida = "HuGaDB_RF_CalibratedAccGyro"
 
 # Verificar se a pasta de saída existe, caso contrário, criá-la
 if not os.path.exists(pasta_saida):
@@ -28,7 +28,7 @@ for arquivo in arquivos_xlsx:
     df["rfaz"] = (df["rfaz"] - df["rfaz"].mean()) / df["rfaz"].std()
     
     # Nome do arquivo de saída
-    nome_arquivo_saida = arquivo.split(".xlsx")[0] + "_calibrated.xlsx"
+    nome_arquivo_saida = arquivo.split("new.xlsx")[0] + "CalibratedAccGyro.xlsx"
     
     # Caminho completo do arquivo de saída
     caminho_saida = os.path.join(pasta_saida, nome_arquivo_saida)
