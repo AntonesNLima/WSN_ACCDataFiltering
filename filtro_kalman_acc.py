@@ -57,10 +57,10 @@ def aplicar_filtro_kalman(arquivo):
     # salvar dados em .xlsx
     df_filtrado = pd.DataFrame({'Coluna 1': coluna1_filtrada, 'Coluna 2': coluna2_filtrada, 'Coluna 3': coluna3_filtrada})
     nome_arquivo = os.path.splitext(os.path.basename(arquivo))[0]
-    df_filtrado.to_excel(f'filtrados_kalman/{nome_arquivo}_filtrado_kalman.xlsx', index=False)
+    df_filtrado.to_excel(f'Single/Kalman/{nome_arquivo}_kalman.xlsx', index=False)
 
 # Pasta com os arquivos .xlsx
-pasta_dados = 'HugaDB_RFOnly'
+pasta_dados = 'HuGaDB_RF_CalibratedAccGyro'
 
 # Obter a lista de arquivos .xlsx na pasta
 arquivos_xlsx = glob.glob(os.path.join(pasta_dados, '*.xlsx'))
@@ -68,3 +68,4 @@ arquivos_xlsx = glob.glob(os.path.join(pasta_dados, '*.xlsx'))
 # Iterar sobre os arquivos e aplicar o filtro de Kalman
 for arquivo in arquivos_xlsx:
     aplicar_filtro_kalman(arquivo)
+    
