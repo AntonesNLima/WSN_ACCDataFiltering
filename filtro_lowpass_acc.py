@@ -13,8 +13,8 @@ cutoff_freq = fc_low / nyquist_freq
 b, a = butter(order, cutoff_freq, btype='low', analog=False)
 
 # Caminhos de entrada e saída
-input_path = 'HuGaDB_RF_CalibratedAccGyro'
-output_path = 'Single/LowPass'
+input_path = 'agoravai'
+output_path = 'agoravai'
 
 # Lendo todos os arquivos do caminho de entrada
 for filename in os.listdir(input_path):

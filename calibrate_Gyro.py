@@ -1,38 +1,39 @@
 import os
 import pandas as pd
 
-# Função para calibração do giroscópio (compensação de viés)
-def calibrate_gyroscope(data):
-    bias = data.mean()  # Estimativa do viés
-    return data - bias  # Compensação do viés
-
-# Pasta de entrada e saída
+# Pasta de entrada
 pasta_entrada = "HuGaDB_RF_CalibratedAccGyro"
-pasta_saida = "HuGaDB_RF_CalibratedAccGyro"
 
-# Criar pasta de saída se não existir
+# Pasta de saída
+pasta_saida = "HuGaDB_RF_CalibratedAccGyro/gyrov2"
+
+# Verificar se a pasta de saída existe, caso contrário, criá-la
 if not os.path.exists(pasta_saida):
     os.makedirs(pasta_saida)
 
-# Lista de arquivos XLSX na pasta de entrada
-arquivos = os.listdir(pasta_entrada)
+# Listar todos os arquivos .xlsx na pasta de entrada
+arquivos_xlsx = [arquivo for arquivo in os.listdir(pasta_entrada) if arquivo.endswith(".xlsx")]
 
-# Loop pelos arquivos XLSX
-for arquivo in arquivos:
-    # Verificar se o arquivo é XLSX
-    if arquivo.endswith(".xlsx"):
-        # Ler o arquivo XLSX original
-        caminho_entrada = os.path.join(pasta_entrada, arquivo)
-        df_original = pd.read_excel(caminho_entrada)
-        
-        # Calibração dos dados do giroscópio
-        df_calibrado = df_original.copy()
-        df_calibrado["rfgx"] = calibrate_gyroscope(df_original["rfgx"])
-        df_calibrado["rfgy"] = calibrate_gyroscope(df_original["rfgy"])
-        df_calibrado["rfgz"] = calibrate_gyroscope(df_original["rfgz"])
-        
-        # Salvar o arquivo XLSX calibrado na pasta de saída
-        caminho_saida = os.path.join(pasta_saida, arquivo)
-        df_calibrado.to_excel(caminho_saida, index=False)
+# Loop pelos arquivos .xlsx
+for arquivo in arquivos_xlsx:
+    # Caminho completo do arquivo de entrada
+    caminho_entrada = os.path.join(pasta_entrada, arquivo)
+    
+    # Ler o arquivo .xlsx usando o Pandas
+    df = pd.read_excel(caminho_entrada)
+    
+    # Normalizar as colunas "rfax", "rfay" e "afaz"
+    df["rfgx"] = (df["rfgx"] - df["rfgx"].mean()) / df["rfgx"].std()
+    df["rfgy"] = (df["rfgy"] - df["rfgy"].mean()) / df["rfgy"].std()
+    df["rfgz"] = (df["rfgz"] - df["rfgz"].mean()) / df["rfgz"].std()
+    
+    # Nome do arquivo de saída
+    nome_arquivo_saida = arquivo.split("new.xlsx")[0] + "CalibratedAccGyro.xlsx"
+    
+    # Caminho completo do arquivo de saída
+    caminho_saida = os.path.join(pasta_saida, nome_arquivo_saida)
+    
+    # Salvar os dados normalizados em um novo arquivo .xlsx
+    df.to_excel(caminho_saida, index=False)
 
-        print(f"Arquivo '{arquivo}' calibrado e salvo em '{caminho_saida}'")
+print("Processamento concluído.")

@@ -13,8 +13,8 @@ cutoff_freq = fc_low / nyquist_freq
 b, a = butter(order, cutoff_freq, btype='low', analog=False)
 
 # Caminhos de entrada e saída
-input_path = 'Single/LowPass'
-output_path = 'Single/LowPass'
+input_path = 'agoravai/aff'
+output_path = 'agoravai'
 
 # Lendo todos os arquivos do caminho de entrada
 for filename in os.listdir(input_path):
@@ -30,7 +30,7 @@ for filename in os.listdir(input_path):
         df_filtered['rfgz'] = filtfilt(b, a, df['rfgz'])
 
         # Salvando os dados filtrados em um novo arquivo xlsx no caminho de saída
-        output_filename = os.path.join(output_path, filename[:-5] + '_lowPass.xlsx')
+        output_filename = os.path.join(output_path, filename[:-5] + '.xlsx')
         df.update(df_filtered)
         df.to_excel(output_filename, index=False)
         print('arquivo gerado.')

@@ -58,14 +58,14 @@ def aplicar_filtro_kalman(arquivo):
 
     # Obter o caminho para o arquivo de saída
     nome_arquivo = os.path.splitext(os.path.basename(arquivo))[0]
-    arquivo_saida = f'Single/Kalman/{nome_arquivo}_kalman.xlsx'
+    arquivo_saida = f'agoravai/{nome_arquivo}_kalman.xlsx'
 
     # Salvar os dados filtrados no arquivo de saída
     with pd.ExcelWriter(arquivo_saida) as writer:
         dados_filtrados.to_excel(writer, sheet_name='Sheet1', index=False)
 
 # Pasta com os arquivos .xlsx
-pasta_dados = 'HuGaDB_RF_CalibratedAccGyro'
+pasta_dados = 'maisuma'
 
 # Obter a lista de arquivos .xlsx na pasta
 arquivos_xlsx = glob.glob(os.path.join(pasta_dados, '*.xlsx'))
